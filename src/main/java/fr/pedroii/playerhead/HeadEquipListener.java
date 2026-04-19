@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -29,6 +30,24 @@ public class HeadEquipListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        boolean affectsHelmet = false;
+
+        // Clic direct sur le slot casque (slot 39 dans l'inventaire joueur)
+        if (event.getSlotType() == InventoryType.SlotType.ARMOR) {
+            affectsHelmet = true;
+        }
+        // Shift-clic depuis n'importe quel slot (peut envoyer item vers casque)
+        if (event.isShiftClick()) {
+            affectsHelmet = true;
+        }
+        // Slot 39 = casque dans l'inventaire joueur
+        if (event.getRawSlot() == 5 || event.getRawSlot() == 39) {
+            affectsHelmet = true;
+        }
+
+        if (!affectsHelmet) return;
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -40,27 +59,14 @@ public class HeadEquipListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        // Vérifie si le drag touche le slot casque
+        if (!event.getRawSlots().contains(5) && !event.getRawSlots().contains(39)) return;
+
         new BukkitRunnable() {
             @Override
             public void run() {
                 if (player.isOnline()) checkHelmetSlot(player);
-            }
-        }.runTaskLater(plugin, 1L);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerArmorChange(PlayerArmorChangeEvent event) {
-        Player player = event.getPlayer();
-        if (event.getSlotType() != PlayerArmorChangeEvent.SlotType.HEAD) return;
-
-        ItemStack newItem = event.getNewItem();
-        ItemStack oldItem = event.getOldItem();
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!player.isOnline()) return;
-                handleHelmetChange(player, oldItem, newItem);
             }
         }.runTaskLater(plugin, 1L);
     }
@@ -116,21 +122,6 @@ public class HeadEquipListener implements Listener {
             if (disguiseManager.isDisguised(player)) {
                 disguiseManager.restorePlayer(player, true);
             }
-        }
-    }
-
-    private void handleHelmetChange(Player player, ItemStack oldItem, ItemStack newItem) {
-        boolean wasPluginHead = HeadDropListener.isPluginHead(oldItem);
-        boolean isPluginHead = HeadDropListener.isPluginHead(newItem);
-
-        if (isPluginHead && !wasPluginHead) {
-            handleEquip(player, newItem);
-        } else if (!isPluginHead && wasPluginHead) {
-            if (disguiseManager.isDisguised(player)) {
-                disguiseManager.restorePlayer(player, true);
-            }
-        } else if (isPluginHead) {
-            handleEquip(player, newItem);
         }
     }
 
