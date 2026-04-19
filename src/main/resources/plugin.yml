@@ -1,0 +1,12 @@
+name: PlayerHeadPlugin
+version: '${project.version}'
+main: fr.pedroii.playerhead.PlayerHeadPlugin
+api-version: '1.21'
+author: YT_Pedro_II
+description: Drop player heads on PvP kill. Wear a head to take the player's appearance and name.
+
+commands:
+  playerhead:
+    description: Plugin info command
+    usage: /playerhead
+    aliases: [ph]
