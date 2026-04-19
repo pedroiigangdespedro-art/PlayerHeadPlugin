@@ -9,7 +9,7 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <n>PlayerHeadPlugin</n>
+    <name>PlayerHeadPlugin</name>
     <description>Drop player heads on PvP kill and disguise with the head</description>
 
     <properties>
